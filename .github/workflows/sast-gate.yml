@@ -1,0 +1,40 @@
+
+name: Defensive Coding SAST Gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  security-scan:
+    name: C++ and Python Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Cppcheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cppcheck
+
+      - name: Run Cppcheck on C++ Files
+        run: |
+          cppcheck --enable=warning,performance,portability \
+          --error-exitcode=1 src/
+
+      - name: Set Up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install Bandit
+        run: |
+          python -m pip install bandit
+
+      - name: Run Bandit on Python Files
+        run: |
+          bandit -r src/ -ll
